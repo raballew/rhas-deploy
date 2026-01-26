@@ -1,0 +1,40 @@
+# Implement your install deployment tasks here
+# -------------------------------------------------
+
+- name: setup rbac  
+  import_tasks: setup_rbac.yml
+
+- name: setup keycloak
+  import_tasks: setup_keycloak.yml
+
+# prepare for the htpasswd oauth provider
+
+- name: generate htpasswd file
+  template:
+    src: "htpasswd.j2"
+    dest: "roles/setup-auth/files/users.htpasswd"
+    owner: "{{ ansible_user_id }}"
+    mode: 0664
+
+- name: create htpasswd secret from htpasswd file
+  ignore_errors: true # can fail if secret already exists
+  shell: |
+    oc create secret generic htpasswd-secret \
+      --from-file=htpasswd=roles/setup-auth/files/users.htpasswd \
+      -n openshift-config \
+      --kubeconfig="$HOME/.kube/{{ cluster_fqn }}"
+
+# configure OAuth
+
+- name: update oauth configuration
+  k8s:
+    merge_type:
+      - strategic-merge
+      - merge
+    definition: "{{ lookup('template', 'openshift-oauth-config.yml.j2') | from_yaml }}"
+    state: present
+    kubeconfig: "{{ local_kubeconfig_file }}"
+
+- name: pause to allow oauth to settle
+  pause:
+    seconds: 300

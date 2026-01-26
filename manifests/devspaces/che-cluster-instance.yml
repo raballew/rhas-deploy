@@ -1,0 +1,101 @@
+apiVersion: org.eclipse.che/v2
+kind: CheCluster
+metadata:
+  name: auto-devspaces
+spec:
+  components:
+    cheServer:
+      debug: false
+      logLevel: INFO
+#      extraProperties:
+#        CHE_FORCE_REFRESH_PERSONAL_ACCESS_TOKEN: "true"
+    dashboard:
+      logLevel: ERROR
+
+    metrics:
+      enable: true
+
+  containerRegistry: {}
+
+  devEnvironments:
+    startTimeoutSeconds: 300
+
+    secondsOfRunBeforeIdling: -1
+    secondsOfInactivityBeforeIdling: 1800
+
+    maxNumberOfWorkspacesPerUser: -1
+    maxNumberOfRunningWorkspacesPerUser: 1
+    maxNumberOfRunningWorkspacesPerCluster: -1
+
+    disableContainerRunCapabilities: false #true
+    containerBuildConfiguration:
+      openShiftSecurityContextConstraint: container-build
+
+    # make sure the devspaces instance is scheduled on one of the builder nodes
+    nodeSelector:
+      auto.node-role/builder: "true"
+    tolerations:
+      - key: "architecture"
+        operator: "Equal"
+        value: "arm"
+        effect: "NoSchedule"
+
+    containerRunConfiguration:
+      containerSecurityContext:
+        procMount: Unmasked
+        capabilities:
+          add:
+            - SETGID
+            - SETUID
+        allowPrivilegeEscalation: true
+      openShiftSecurityContextConstraint: container-run
+
+    defaultContainerResources:
+      limits:
+        cpu: "2"
+        memory: 4Gi
+      requests:
+        cpu: "500m"
+        memory: 1Gi
+
+#    defaultComponents:
+#      - name: tools
+#        container:
+#          sourceMapping: /projects
+#          image: "ghcr.io/rhadp/builder:latest"
+#          memoryLimit: 4Gi
+#          cpuLimit: 2000m
+#          memoryRequest: 1Gi
+#          cpuRequest: 500m
+
+    ignoredUnrecoverableEvents:
+      - FailedScheduling
+
+    defaultNamespace:
+      autoProvision: true
+      template: devspaces-<username>
+
+    imagePullPolicy: Always # IfNotPresent
+    deploymentStrategy: Recreate
+
+    storage:
+      pvcStrategy: per-user
+      perUserStrategyPvcConfig:
+        claimSize: 10Gi
+        # storageClass: "your-storage-class"  # Uncomment and set to your preferred storage class
+
+  gitServices: {}
+
+  networking:
+    auth:
+      advancedAuthorization:
+        allowGroups:
+          - "platform-admins"
+          - "platform-users"
+      gateway:
+        kubeRbacProxy:
+          logLevel: 0
+        oAuthProxy:
+          cookieExpireSeconds: 86400
+        traefik:
+          logLevel: INFO

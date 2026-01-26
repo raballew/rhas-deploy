@@ -1,0 +1,4 @@
+---
+# defaults
+
+cluster_ssh_key_dir: "~/.ssh" # "$HOME/.ssh"

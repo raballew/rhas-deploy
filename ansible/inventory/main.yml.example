@@ -1,0 +1,63 @@
+all:
+  # default values that control the OpenShift cluster deployment
+  vars:
+    #
+    # part 1 - cluster configuration
+    #
+
+    # cloud provider selection
+    cloud_provider: "aws" # aws, azure, gcp
+
+    # cluster version
+    cluster_version: "4.20.10"
+
+    # installer architecture, see https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.20.2/
+    installer_architecture: "mac-arm64" # mac, mac-arm64, linux, linux-arm64
+        
+    # cluster topology
+    cluster_arch: "multi" # x86_64, aarch64, multi -> multi is only available on aws & azure !
+    control_plane_arch: "arm64" #  amd64, arm64, -> only relevant when cluster_arch == multi
+    cluster_topology: "default" # default, compact
+
+    # cluster configuration
+    cluster_name: "rhas"
+    cluster_sub_domain: "rhas.example.com"
+    cluster_toplevel_domain: "example.com" # top-level domain for e.g. default user emails
+    cluster_default_storage_class: "gp3-csi" # "gp3-csi" (aws), "managed-csi" (azure), "standard-csi" (gcp)
+    
+    # cluster deployment options
+    setup_arm_worker_nodes: false # create a second set of ARM worker nodes if primary is x86_64 based
+    setup_baremetal_worker_node: false # create a bare-metal ARM worker node (currently AWS only)
+    setup_virtualization: false # setup cnv operator on bare-metal ARM worker node (currently AWS only)
+
+    # cluster overrides
+    # see 'roles/create-cluster/defaults/main.yml' for available variables
+
+    #
+    # part 2 - platform configuration
+    #
+
+    platform_deploy_devspaces: true # deploy dev spaces
+    platform_deploy_developer_hub: false # deploy the developer hub
+    platform_deploy_jumpstarter: false # deploy the jumpstarter operator
+    platform_deploy_builder: true # deploy the builder operator
+    
+    # resource prefix
+    platform_prefix: "auto" # used in e.g. namespace creation, node labeling etc
+
+    # default repo for all the GitOps apps
+    platform_gitops_repo_url: "https://github.com/rhadp/rhas-deploy"
+    platform_gitops_repo_revision: "main"
+
+    # default platform namespaces
+    platform_devspaces_namespace: "{{ platform_prefix }}-devspaces"
+    platform_developer_hub_namespace: "{{ platform_prefix }}-devhub"
+    platform_builder_namespace: "{{ platform_prefix }}-builder"
+    platform_jumpstarter_namespace: "{{ platform_prefix }}-jumpstarter"
+
+    # remove the kubeadmin user and the self-provisioning role
+    remove_kubeadmin: true
+    remove_self_provisioning: true
+
+    # platform overrides
+    # see 'roles/setup-platform/defaults/main.yml' for available variables

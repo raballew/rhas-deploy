@@ -1,0 +1,17 @@
+# Implement your post-install deployment tasks here
+# -------------------------------------------------
+
+- name: configure ingress controller to use the certificate
+  k8s:
+    definition:
+      apiVersion: operator.openshift.io/v1
+      kind: IngressController
+      metadata:
+        name: default
+        namespace: openshift-ingress-operator
+      spec:
+        defaultCertificate:
+          name: default-ingress-cert
+    state: present
+    merge_type: merge
+    kubeconfig: "{{ local_kubeconfig_file }}"

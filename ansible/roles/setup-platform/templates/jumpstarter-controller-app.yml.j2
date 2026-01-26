@@ -1,0 +1,52 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: auto-jumpstarter-controller
+  namespace: "{{ gitops_namespace }}"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    name: in-cluster
+    namespace: "{{ platform_jumpstarter_namespace }}"
+  project: rhas
+  source:
+    repoURL: "{{ jumpstarter_helm_repo }}"
+    targetRevision: "{{ jumpstarter_helm_repo_version }}"
+    path: "{{ jumpstarter_helm_chart_path }}"
+    helm:
+      valuesObject:
+        global:
+          baseDomain: "{{ platform_jumpstarter_namespace }}.apps.{{ cluster_base_domain }}"
+          metrics:
+            enabled: true
+        jumpstarter-controller:
+          image: "{{ jumpstarter_controller_image }}"
+          tag: "{{ jumpstarter_controller_version }}"
+          grpc:
+            mode: "route"
+          config:
+            provisioning:
+              enabled: false # disable auto-provisioning, it's buggy
+            authentication:
+              jwt:
+                - issuer:
+                    url: https://kubernetes.default.svc
+                    audiences:
+                      - https://kubernetes.default.svc
+                    certificateAuthority: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+                  claimMappings:
+                    username:
+                      expression: '"kubernetes:" + claims["kubernetes.io"]["namespace"]'
+  syncPolicy:
+    automated:
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ApplyOutOfSyncOnly=true
+    retry:
+      backoff:
+        duration: 5s # the amount to back off. Default unit is seconds, but could also be a duration (e.g. "2m", "1h")
+        factor: 2 # a factor to multiply the base duration after each failed retry
+        maxDuration: 10m # the maximum amount of time allowed for the backoff strategy
+

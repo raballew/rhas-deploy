@@ -1,0 +1,12 @@
+- name: lifecycle the openshift cluster
+  hosts: localhost
+  vars:
+    # set the following to control the install/uninstall process
+    silent: false
+    become_override: false
+    ACTION: "STOP" # START, STOP, UNINSTALL, UPDATE
+
+  tasks:
+    - name: stop the openshift cluster
+      include_role:
+        name: roles/lifecycle-cluster

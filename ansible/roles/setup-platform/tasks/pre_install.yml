@@ -1,0 +1,33 @@
+# Implement your pre-install deployment tasks here
+# -------------------------------------------------
+
+- name: install the devspaces operator
+  when: platform_deploy_devspaces | bool == true
+  block:
+    - name: install devspaces operator
+      include_role:
+        name: roles/install-operator
+      vars:
+        operator_name: "devspaces"
+        operator_subscription_name: "devspaces"
+        subscription_channel: "{{ devspaces_subscription_channel }}"
+        subscription_starting_csv: "{{ devspaces_subscription_starting_csv }}"
+        operator_deployment_name: "devspaces-operator"
+        create_operator_namespace: false
+        create_operator_group: false
+
+- name: install the developer hub operator
+  when: platform_deploy_developer_hub | bool == true
+  block:
+    - name: install developer hub operator
+      include_role:
+        name: roles/install-operator
+      vars:
+        operator_name: "rhdh"
+        operator_subscription_name: "rhdh"
+        subscription_channel: "{{ devhub_subscription_channel }}"
+        subscription_starting_csv: "{{ devhub_subscription_starting_csv }}"
+        operator_namespace: "rhdh-operator"
+        operator_group_name: "rhdh-operator"
+        create_operator_namespace: true
+        create_operator_group: true

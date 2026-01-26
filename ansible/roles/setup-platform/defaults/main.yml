@@ -1,0 +1,33 @@
+---
+# defaults
+
+# default platform groups (also defined in setup-auth)
+cluster_admin_group: "cluster-admins"
+platform_admin_group: "platform-admins"
+platform_user_group: "platform-users"
+
+# default jumpstarter groups (also defined in setup-auth)
+jumpstarter_admin_group: "jumpstarter-admins"
+jumpstarter_user_group: "jumpstarter-users"
+
+# devspaces operator
+devspaces_subscription_channel: "stable"
+devspaces_subscription_starting_csv: "devspacesoperator.v3.25.0"
+
+# developer hub operator
+devhub_subscription_channel: "fast"
+devhub_subscription_starting_csv: "rhdh-operator.v1.7.2"
+
+# jumpstarter operator
+jumpstarter_helm_repo: "https://github.com/rhadp/jumpstarter-controller.git"
+jumpstarter_helm_repo_version: "main" # git branch, tag, or commit SHA
+jumpstarter_helm_chart_path: "deploy/helm/jumpstarter" # path to helm chart in the repo
+
+jumpstarter_controller_image: "quay.io/jumpstarter-dev/jumpstarter-controller"
+jumpstarter_controller_version: "0.7.0-121-g6ee2eb6"
+
+#jumpstarter_helm_repo: "quay.io/jumpstarter-dev/helm"
+#jumpstarter_helm_repo_version: "0.7.0-120-g64b465d" # see https://quay.io/repository/jumpstarter-dev/jumpstarter-controller for available versions
+
+# gitops namespace
+gitops_namespace: "openshift-gitops" # namespace of the cluster gitops instance

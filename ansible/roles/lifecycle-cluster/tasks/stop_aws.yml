@@ -1,0 +1,51 @@
+# Implement your stop tasks here
+# -------------------------------------------------
+
+- name: stop openshift cluster
+  environment:
+    AWS_ACCESS_KEY_ID: "{{ aws_access_key_id }}"
+    AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key }}"
+    AWS_DEFAULT_REGION: "{{ aws_default_region }}"
+  block:
+    - name: gather instances in running state
+      ec2_instance_info:
+        region: "{{ aws_default_region }}"
+        filters:
+          instance-state-name: running
+          "tag:Name": "{{ cluster_name }}*"
+      register: ec2_instances
+
+    - name: stop running instances (async)
+      ec2_instance:
+        state: stopped
+        wait: true
+        instance_ids: "{{ ec2_instances.instances | map(attribute='instance_id') | list }}"
+      when: ec2_instances.instances | length > 0
+      async: 60  # Allow up to 10 minutes for each stop operation
+      poll: 10     # Fire and forget - don't wait for completion
+      register: stop_jobs
+
+    - name: wait for all instances to finish stopping
+      async_status:
+        jid: "{{ item.ansible_job_id }}"  
+      loop: "{{ stop_jobs.results | default([]) }}"
+      when: 
+        - ec2_instances.instances | length > 0
+        - item.ansible_job_id is defined
+      register: stop_jobs_result
+      until: stop_jobs_result.finished
+      retries: 60
+      delay: 10
+
+    - name: verify instances are stopped
+      ec2_instance_info:
+        region: "{{ aws_default_region }}"
+        filters:
+          instance-state-name: running
+          "tag:Name": "{{ cluster_name }}*"
+      register: running_instances
+      
+    - name: fail if instances are still running
+      fail:
+        msg: "Some instances are still running after stop operation"
+      when: running_instances.instances | length > 0

@@ -1,0 +1,34 @@
+# Implement your start tasks here
+# -------------------------------------------------
+
+- name: start openshift cluster
+  environment:
+    AZURE_CLIENT_ID: "{{ azure_client_id }}"
+    AZURE_SECRET: "{{ azure_password }}"
+    AZURE_SUBSCRIPTION_ID: "{{ azure_subscription }}"
+    AZURE_TENANT: "{{ azure_tenant }}"
+  block:
+    - name: gather all azure instances from resource group
+      azure_rm_virtualmachine_info:
+        subscription_id: "{{ azure_subscription }}" # FIXME: this is not correct, it might 'catch' other VMs that are not part of the cluster
+      register: azure_vms
+
+    - name: filter instances by cluster name and stopped state
+      set_fact:
+        stopped_vms: "{{ azure_vms.vms | selectattr('power_state', 'equalto', 'stopped') | list }}"
+
+    - name: start instances
+      azure_rm_virtualmachine:
+        resource_group: "{{ item.resource_group }}"
+        name: "{{ item.name }}"
+        state: present
+        started: true
+      loop: "{{ stopped_vms }}"
+      when: stopped_vms | length > 0
+      async: 600  # Allow up to 10 minutes for each stop operation
+      poll: 0     # Fire and forget - don't wait for completion
+
+    - name: wait until the cluster is ready
+      pause:
+        seconds: "{{ wait_timeout }}"
+

@@ -1,0 +1,23 @@
+# Do not modify this file.
+# Implement pre-/post-install, install/uninstall tasks in their own files.
+
+#- name: running initial tasks
+#  include_tasks:
+#    file: ./initial.yml
+#    apply:
+#      become: "{{ become_override | bool }}"
+      
+- name: run start tasks
+  include_tasks:
+    file: ./start_{{ cloud_provider }}.yml
+    apply:
+      become: "{{ become_override | bool }}"
+  when: ACTION == "START"
+
+- name: run stop tasks
+  include_tasks:
+    file: ./stop_{{ cloud_provider }}.yml
+    apply:
+      become: "{{ become_override | bool }}"
+  when: ACTION == "STOP"
+

@@ -1,0 +1,4 @@
+---
+# defaults
+
+wait_timeout: 600  # Timeout for cluster readiness wait in seconds

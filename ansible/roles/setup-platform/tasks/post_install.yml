@@ -1,0 +1,49 @@
+# Implement your post-install deployment tasks here
+# -------------------------------------------------
+
+- name: give platform_user_group viewer access to platform_builder_namespace
+  when: platform_deploy_builder | bool == true
+  shell: |
+    oc adm policy add-role-to-group view {{ platform_user_group }} \
+      -n {{ platform_builder_namespace }} \
+      --kubeconfig="$HOME/.kube/{{ cluster_fqn }}"
+
+- name: give jumpstarter_user_group edit access to platform_jumpstarter_namespace
+  when: platform_deploy_jumpstarter | bool == true
+  shell: |
+    oc adm policy add-role-to-group edit {{ jumpstarter_user_group }} \
+      -n {{ platform_jumpstarter_namespace }} \
+      --kubeconfig="$HOME/.kube/{{ cluster_fqn }}"
+
+- name: facts
+  set_fact:
+    github_api_credentials: "https://{{ github_api_pat_owner }}:{{ github_api_pat }}@{{ github_endpoint }}/"
+
+- name: create github platform credentials secret  
+  k8s:
+    definition: "{{ lookup('template', 'secret-github-credentials.yml.j2') | from_yaml }}"
+    state: present
+    apply: yes
+    kubeconfig: "{{ local_kubeconfig_file }}"
+  when: github_api_pat_owner is defined and github_api_pat is defined
+
+# FIXME: replace with an external secret and link it to e.g. HashiCorp Vault
+- name: create aws platform credentials secret  
+  k8s:
+    definition: "{{ lookup('template', 'secret-aws-credentials.yml.j2') | from_yaml }}"
+    namespace: "{{ item }}"
+    state: present
+    apply: yes
+    kubeconfig: "{{ local_kubeconfig_file }}"
+  with_items:
+    - "{{ platform_builder_namespace }}"
+    - "{{ platform_devspaces_namespace }}"
+  when: platform_aws_access_key_id is defined and platform_aws_secret_access_key is defined
+
+- name: remove self-provisioner
+  when: remove_self_provisioning | bool == true
+  ignore_errors: true
+  shell: |
+    oc adm policy remove-cluster-role-from-group \
+      self-provisioner system:authenticated:oauth \
+      --kubeconfig="$HOME/.kube/{{ cluster_fqn }}"

@@ -1,0 +1,9 @@
+ansible
+boto3
+psutil
+kubernetes
+google-auth
+google-cloud-compute
+requests
+google-auth-oauthlib
+awscli

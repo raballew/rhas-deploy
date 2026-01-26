@@ -1,0 +1,61 @@
+# Implement your start tasks here
+# -------------------------------------------------
+
+- name: start openshift cluster
+  environment:
+    GOOGLE_APPLICATION_CREDENTIALS: "{{ gcp_service_account_key_file }}"
+  block:
+    - name: gather instances in stopped state
+      google.cloud.gcp_compute_instance_info:
+        project: "{{ gcp_project_id }}"
+        zone: "{{ gcp_default_region }}-a"
+        filters:
+          - name = "{{ cluster_name }}*"
+          - status = "TERMINATED"
+        auth_kind: serviceaccount
+        service_account_file: "{{ gcp_service_account_key_file }}"
+      register: gce_instances_a
+
+    - name: gather instances in stopped state (zone b)
+      google.cloud.gcp_compute_instance_info:
+        project: "{{ gcp_project_id }}"
+        zone: "{{ gcp_default_region }}-b"
+        filters:
+          - name = "{{ cluster_name }}*"
+          - status = "TERMINATED"
+        auth_kind: serviceaccount
+        service_account_file: "{{ gcp_service_account_key_file }}"
+      register: gce_instances_b
+
+    - name: gather instances in stopped state (zone f)
+      google.cloud.gcp_compute_instance_info:
+        project: "{{ gcp_project_id }}"
+        zone: "{{ gcp_default_region }}-f"
+        filters:
+          - name = "{{ cluster_name }}*"
+          - status = "TERMINATED"
+        auth_kind: serviceaccount
+        service_account_file: "{{ gcp_service_account_key_file }}"
+      register: gce_instances_f
+
+    - name: combine instances from all zones
+      set_fact:
+        all_stopped_instances: "{{ (gce_instances_a.resources | default([])) + (gce_instances_b.resources | default([])) + (gce_instances_f.resources | default([])) }}"
+
+    - name: start instances
+      google.cloud.gcp_compute_instance:
+        name: "{{ item.name }}"
+        zone: "{{ item.zone.split('/')[-1] }}"
+        project: "{{ gcp_project_id }}"
+        status: RUNNING
+        auth_kind: serviceaccount
+        service_account_file: "{{ gcp_service_account_key_file }}"
+      loop: "{{ all_stopped_instances }}"
+      when: all_stopped_instances | length > 0
+      async: 600  # Allow up to 10 minutes for each stop operation
+      poll: 0     # Fire and forget - don't wait for completion
+
+    - name: wait until the cluster is ready
+      pause:
+        seconds: "{{ wait_timeout }}"
+

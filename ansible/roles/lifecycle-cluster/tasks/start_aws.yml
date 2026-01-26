@@ -1,0 +1,30 @@
+# Implement your start tasks here
+# -------------------------------------------------
+
+- name: start openshift cluster
+  environment:
+    AWS_ACCESS_KEY_ID: "{{ aws_access_key_id }}"
+    AWS_SECRET_ACCESS_KEY: "{{ aws_secret_access_key }}"
+    AWS_DEFAULT_REGION: "{{ aws_default_region }}"
+  block:
+    - name: gather instances in stopped state
+      ec2_instance_info:
+        region: "{{ aws_default_region }}"
+        filters:
+          instance-state-name: stopped
+          "tag:Name": "{{ cluster_name }}*"
+      register: ec2_instances
+
+    - name: start instances
+      ec2_instance:
+        state: running
+        wait: true
+        instance_ids: "{{ ec2_instances.instances | map(attribute='instance_id') | list }}"
+      when: ec2_instances.instances | length > 0
+      async: 600  # Allow up to 10 minutes for each stop operation
+      poll: 0     # Fire and forget - don't wait for completion
+
+    - name: wait until the cluster is ready
+      pause:
+        seconds: "{{ wait_timeout }}"
+

@@ -1,0 +1,22 @@
+# Implement your post-install deployment tasks here
+# -------------------------------------------------
+
+
+# remove the kubeadmin user secret and self-provisioner cluster role binding
+- name: remove kubeadmin user secret
+  when: remove_kubeadmin | bool == true
+  k8s:
+    api_version: v1
+    kind: Secret
+    namespace: kube-system
+    name: kubeadmin
+    state: absent
+    kubeconfig: "{{ local_kubeconfig_file }}"
+    
+# cleanup temp files
+- name: remove the htpasswd file
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - "roles/setup-auth/files/users.htpasswd"

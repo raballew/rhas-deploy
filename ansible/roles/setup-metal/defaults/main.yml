@@ -1,0 +1,33 @@
+---
+# Default values for the config-cluster role. To override, add them to the inventory file (main.yml).
+
+#------------------------------------------------------------------------------------------------
+# aws defaults
+#------------------------------------------------------------------------------------------------
+
+# bare-metal worker node
+aws_metal_instance_type: "m6g.metal" # 64 vCPU, 256 GiB RAM
+aws_metal_availability_zone: "a" # a, b, c
+
+aws_metal_ami_id: "ami-04ae961842e2912df" # ARM, eu-central-1
+#aws_metal_ami_id: "ami-02f30107e3441227b" # ARM, us-east-2
+#aws_metal_ami_id: "ami-0ba6941055f037421" # ARM, eu-west-1
+
+aws_metal_instance_count: 1 # number of replicas per availability zone
+aws_metal_volume_size: 120
+aws_metal_volume_type: "gp3"
+aws_metal_vcpu: 64
+aws_metal_gpu: 0
+aws_metal_memory: 262144
+
+#------------------------------------------------------------------------------------------------
+# cnv operator
+#------------------------------------------------------------------------------------------------
+
+cnv_operator_name: "kubevirt-hyperconverged"
+cnv_operator_subscription_name: "kubevirt-hyperconverged"
+cnv_operator_deployment_name: "virt-operator"
+cnv_subscription_channel: "stable"
+cnv_subscription_starting_csv: "kubevirt-hyperconverged-operator.v4.20.3"
+cnv_operator_namespace: "openshift-cnv"
+cnv_operator_group: "openshift-cnv"
