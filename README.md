@@ -1,8 +1,27 @@
 # Red Hat Automotive Suite
 
-This repository provides Infrastructure as Code (IaC) for deploying the complete [Red Hat Automotive Suite](https://github.com/rhadp) (RHAS) — a comprehensive, cloud-native development environment specifically designed for automotive software development.
+> **One-command deployment of a complete automotive development platform**
 
-The platform automatically provisions OpenShift clusters across major cloud providers (AWS, Azure, or GCP) with hybrid ARM/x86 architecture support, and pre-configures an integrated suite of development tools to streamline the creation of automotive applications and the Red Hat In-Vehicle Operating System (RHIVOS).  
+RHAS provides Infrastructure as Code (IaC) for deploying the complete [Red Hat Automotive Suite](https://github.com/rhadp) — a cloud-native development environment purpose-built for automotive software development.
+
+## What You Get
+
+- **OpenShift Cluster** – Multi-cloud deployment (AWS, Azure, GCP) with hybrid ARM/x86 support
+- **Dev Spaces** – Browser-based IDEs with pre-configured automotive toolchains
+- **CI/CD Pipeline** – Automated build system for automotive images (RHIVOS)
+- **Hardware-in-the-Loop (HIL) Testing** – Jumpstarter integration for real device testing
+- **GitOps Ready** – ArgoCD pre-configured for declarative deployments
+- **SSO & RBAC** – Keycloak-based authentication out of the box
+
+**Deploy in ~60 minutes** with a single command.
+
+## Quick Start
+
+### Prerequisites
+
+- Cloud credentials (AWS/Azure/GCP)
+- Red Hat account with OpenShift pull secret
+- Python 3.9+ and Ansible
 
 ## Getting started
 
@@ -34,11 +53,13 @@ pip install -r ~/.ansible/collections/ansible_collections/azure/azcollection/req
 
 #### Obtain a Red Hat OpenShift pull-secret
 
-1. Visit [Red Hat Hybride Cloud Console](https://console.redhat.com/openshift/overview)
+1. Visit [Red Hat Hybrid Cloud Console](https://console.redhat.com/openshift/overview)
 2. Log in with your Red Hat account
 3. Select the OpenShift [cluster type](https://console.redhat.com/openshift/create)
 4. Download the pull secret (JSON file)
-5. Save to `inventory/pull-secret.txt`
+5. Save to `ansible/inventory/pull-secret.txt`
+
+### Deployment
 
 #### Configure your deployment
 
@@ -48,8 +69,6 @@ cp ansible/inventory/secrets.yml.example ansible/inventory/secrets.yml
 ```
 
 Edit `inventory/main.yml` and `inventory/secrets.yml` and configure the deployment options.
-
-### Deployment
 
 #### Run the full end-to-end deployment
 
@@ -62,15 +81,46 @@ ansible-playbook -i inventory/ 1_bootstrap_cluster.yml
 
 **Expected Duration:** 60-90 minutes
 
+Once complete, access your platform:
+- **OpenShift Console**: `https://console-openshift-console.apps.<cluster_name>.<domain>`
+- **Dev Spaces**: Pre-configured workspaces for automotive development
+- **ArgoCD**: Manage your GitOps deployments
+
+
+## Managing Your Cluster
+
+### Start/Stop
+
+```bash
+cd ansible
+
+# Stop cluster (preserves state, reduces cloud costs)
+ansible-playbook -i inventory/ stop.yml
+
+# Start cluster
+ansible-playbook -i inventory/ start.yml
+```
+
+### Destroy
+
+```bash
+cd ansible
+ansible-playbook -i inventory/ 9_destroy_cluster.yml
+```
+
 ## Contributing
 
-Fork the repository and submit a pull request.
+Contributions welcome! Fork the repository and submit a pull request.
 
-## Development
+See the [project board](https://github.com/orgs/rhadp/projects/1) for planned features and open issues.
 
-A list of ideas, open issues etc related to the Red Hat Automotive Suite (RHAS) is [here](https://github.com/orgs/rhadp/projects/1).  
+## Related Repositories
 
-Also check the [Issues](https://github.com/rhadp/rhas-deploy/issues) section of the this repository.
+- [rhadp/containers](https://github.com/rhadp/containers) - Container images for the platform
+- [jumpstarter-dev/jumpstarter](https://github.com/jumpstarter-dev/jumpstarter) - Automated testing on real and virtual hardware with CI/CD integration
+- [AutoSD - Automotive Stream Distribution](https://sigs.centos.org/automotive/index.html) - AutoSD is the upstream binary distribution that serves as the public, in-development preview of Red Hat In-Vehicle Operating System (RHIVOS)
+- [CentOS/automotive](https://gitlab.com/CentOS/automotive) - AutoSD code
+
 
 ## Disclaimer
 
