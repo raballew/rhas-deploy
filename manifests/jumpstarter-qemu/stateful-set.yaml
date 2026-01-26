@@ -119,7 +119,7 @@ spec:
               source /venv/bin/activate
 
               # update to latest jumpstarter version
-              uv pip install --reinstall "git+https://github.com/rhadp/jumpstarter@develop#subdirectory=packages/jumpstarter-all"
+              uv pip install --reinstall "git+https://github.com/rhadp/jumpstarter@develop#subdirectory=python/packages/jumpstarter-all"
 
               # Extract the values from the service account
               TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)
