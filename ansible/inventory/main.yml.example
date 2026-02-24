@@ -9,7 +9,7 @@ all:
     cloud_provider: "aws" # aws, azure, gcp
 
     # cluster version
-    cluster_version: "4.20.10"
+    cluster_version: "4.20.12"
 
     # installer architecture, see https://mirror.openshift.com/pub/openshift-v4/clients/ocp/4.20.2/
     installer_architecture: "mac-arm64" # mac, mac-arm64, linux, linux-arm64
