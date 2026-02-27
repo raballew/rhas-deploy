@@ -24,7 +24,7 @@ jumpstarter_helm_repo_version: "main" # git branch, tag, or commit SHA
 jumpstarter_helm_chart_path: "controller/deploy/helm/jumpstarter" # path to helm chart in the repo
 
 jumpstarter_controller_image: "quay.io/jumpstarter-dev/jumpstarter-controller"
-jumpstarter_controller_version: "0.7.0-1059-g21365425"
+jumpstarter_controller_version: "0.8.1-rc.1-46-gb2eecf2c"
 
 #jumpstarter_helm_repo: "quay.io/jumpstarter-dev/helm"
 #jumpstarter_helm_repo_version: "0.7.0-120-g64b465d" # see https://quay.io/repository/jumpstarter-dev/jumpstarter-controller for available versions
