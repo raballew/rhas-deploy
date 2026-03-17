@@ -5,7 +5,7 @@ metadata:
 spec:
   serviceName: qemu-exporter
   podManagementPolicy: Parallel
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       exporter-mock: qemu
@@ -119,7 +119,7 @@ spec:
               source /venv/bin/activate
 
               # update to latest jumpstarter version
-              uv pip install --reinstall "git+https://github.com/rhadp/jumpstarter@develop#subdirectory=python/packages/jumpstarter-all"
+              uv pip install --reinstall "git+https://github.com/mickume/jumpstarter@develop#subdirectory=python/packages/jumpstarter-all"
 
               # Extract the values from the service account
               TOKEN=$(cat /var/run/secrets/kubernetes.io/serviceaccount/token)

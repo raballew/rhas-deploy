@@ -9,8 +9,8 @@ spec:
   project: rhas
   revisionHistoryLimit: 3
   source:
-    path: apps/jumpstarter-qemu
-    repoURL: "https://github.com/rhadp/manifests"
+    path: manifests/jumpstarter-qemu
+    repoURL: "https://github.com/rhadp/rhas-deploy"
     targetRevision: "main"
   destination:
     namespace: auto-jumpstarter
