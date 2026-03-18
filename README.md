@@ -63,10 +63,9 @@ pip install -r ~/.ansible/collections/ansible_collections/azure/azcollection/req
 
 ```bash
 cp ansible/inventory/main.yml.example ansible/inventory/main.yml
-cp ansible/inventory/secrets.yml.example ansible/inventory/secrets.yml
 ```
 
-Edit `inventory/main.yml` and `inventory/secrets.yml` and configure the deployment options.
+Edit `inventory/main.yml` to configure the deployment options.
 
 #### Run the full end-to-end deployment
 
