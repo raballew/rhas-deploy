@@ -12,19 +12,24 @@ jumpstarter_user_group: "jumpstarter-users"
 
 # devspaces operator
 devspaces_subscription_channel: "stable"
-devspaces_subscription_starting_csv: "devspacesoperator.v3.25.0"
+devspaces_subscription_starting_csv: "devspacesoperator.v3.27.0"
 
 # developer hub operator
 devhub_subscription_channel: "fast"
-devhub_subscription_starting_csv: "rhdh-operator.v1.7.2"
+devhub_subscription_starting_csv: "rhdh-operator.v1.9.3"
 
 # jumpstarter operator
-jumpstarter_helm_repo: "https://github.com/jumpstarter-dev/jumpstarter.git"
-jumpstarter_helm_repo_version: "main" # git branch, tag, or commit SHA
-jumpstarter_helm_chart_path: "controller/deploy/helm/jumpstarter" # path to helm chart in the repo
+jumpstarter_subscription_channel: "alpha"
+jumpstarter_source: "community-operators"
+jumpstarter_subscription_starting_csv: "jumpstarter-operator.v0.8.1"
+jumpstarter_image: "quay.io/jumpstarter-dev/jumpstarter-controller:0.8.1"
 
-jumpstarter_controller_image: "quay.io/jumpstarter-dev/jumpstarter-controller"
-jumpstarter_controller_version: "0.8.1-rc.2-143-gec11dc41"
+#jumpstarter_helm_repo: "https://github.com/jumpstarter-dev/jumpstarter.git"
+#jumpstarter_helm_repo_version: "main" # git branch, tag, or commit SHA
+#jumpstarter_helm_chart_path: "controller/deploy/helm/jumpstarter" # path to helm chart in the repo
+
+#jumpstarter_controller_image: "quay.io/jumpstarter-dev/jumpstarter-controller"
+#jumpstarter_controller_version: "0.8.1-rc.2-143-gec11dc41"
 
 #jumpstarter_helm_repo: "quay.io/jumpstarter-dev/helm"
 #jumpstarter_helm_repo_version: "0.7.0-120-g64b465d" # see https://quay.io/repository/jumpstarter-dev/jumpstarter-controller for available versions

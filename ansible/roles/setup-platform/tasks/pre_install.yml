@@ -1,6 +1,22 @@
 # Implement your pre-install deployment tasks here
 # -------------------------------------------------
 
+- name: install the jumpstarter operator
+  when: platform_deploy_jumpstarter | bool == true
+  block:
+    - name: install jumpstarter operator
+      include_role:
+        name: roles/install-operator
+      vars:
+        operator_name: "jumpstarter-operator"
+        operator_subscription_name: "jumpstarter-operator"
+        source: "{{ jumpstarter_source }}"
+        subscription_channel: "{{ jumpstarter_subscription_channel }}"
+        subscription_starting_csv: "{{ jumpstarter_subscription_starting_csv }}"
+        operator_deployment_name: "jumpstarter-operator-controller-manager"
+        create_operator_namespace: false
+        create_operator_group: false
+
 - name: install the devspaces operator
   when: platform_deploy_devspaces | bool == true
   block:
@@ -15,11 +31,6 @@
         operator_deployment_name: "devspaces-operator"
         create_operator_namespace: false
         create_operator_group: false
-
-    - name: wait for devspaces operator to fully initialize
-      pause:
-        minutes: 1
-
 
 - name: install the developer hub operator
   when: platform_deploy_developer_hub | bool == true
@@ -37,6 +48,6 @@
         create_operator_namespace: true
         create_operator_group: true
 
-    - name: wait for developer hub operator to fully initialize
-      pause:
-        minutes: 1
+- name: wait for operators to fully initialize
+  pause:
+    minutes: 1
