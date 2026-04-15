@@ -1,22 +1,8 @@
 kind: RoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: auto-devspaces-gitops-cluster-admin
-  namespace: auto-devspaces
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: cluster-admin
-subjects:
-  - kind: ServiceAccount
-    name: openshift-gitops-argocd-application-controller
-    namespace: openshift-gitops
----
-kind: RoleBinding
-apiVersion: rbac.authorization.k8s.io/v1
-metadata:
-  name: auto-devhub-gitops-cluster-admin
-  namespace: auto-devhub
+  name: auto-platform-gitops-cluster-admin
+  namespace: auto-platform
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -45,6 +31,34 @@ apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: auto-jumpstarter-gitops-cluster-admin
   namespace: auto-jumpstarter
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: openshift-gitops-argocd-application-controller
+    namespace: openshift-gitops
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: auto-devspaces-gitops-cluster-admin
+  namespace: auto-devspaces
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+  - kind: ServiceAccount
+    name: openshift-gitops-argocd-application-controller
+    namespace: openshift-gitops
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: auto-devhub-gitops-cluster-admin
+  namespace: auto-devhub
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
