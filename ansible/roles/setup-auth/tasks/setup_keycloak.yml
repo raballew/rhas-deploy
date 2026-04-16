@@ -7,9 +7,14 @@
       - keycloak_db_user is defined
       - keycloak_db_password is defined
       - keycloak_client_secret is defined
+      - keycloak_user_developer_password is defined
+      - keycloak_user_devops_password is defined
+      - keycloak_user_tester_password is defined
     fail_msg: >-
       Keycloak credentials (keycloak_db_user, keycloak_db_password,
-      keycloak_client_secret) must be set in inventory or vault.
+      keycloak_client_secret, keycloak_user_developer_password,
+      keycloak_user_devops_password, keycloak_user_tester_password)
+      must be set in inventory or vault.
 
 # install the keycloak operator
 
