@@ -11,6 +11,19 @@
       platform_prefix to "auto" or update the static manifests to
       match.
 
+- name: validate group names match static devspaces manifest
+  when: platform_deploy_devspaces | bool == true
+  assert:
+    that:
+      - platform_admin_group == "platform-admins"
+      - platform_user_group == "platform-users"
+    fail_msg: >-
+      platform_admin_group is "{{ platform_admin_group }}" and
+      platform_user_group is "{{ platform_user_group }}" but the
+      static devspaces manifest (manifests/devspaces/che-cluster-instance.yml)
+      hardcodes allowGroups to ["platform-admins", "platform-users"].
+      Either use the default group names or update the static manifest.
+
 - name: install the jumpstarter operator
   when: platform_deploy_jumpstarter | bool == true
   block:
