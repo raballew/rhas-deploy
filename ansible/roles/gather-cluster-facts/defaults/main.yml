@@ -2,3 +2,4 @@
 # defaults
 
 cluster_ssh_key_dir: "$HOME/.ssh"
+local_kubeconfig_file: "~/.kube/{{ cluster_name }}-{{ cloud_provider }}"
