@@ -15,4 +15,4 @@ keycloak_namespace: "keycloak"
 
 # keycloak subscription
 keycloak_subscription_channel: "stable-v26.4"
-keycloak_subscription_starting_csv: "rhbk-operator.v26.4.7-opr.1" 
+keycloak_subscription_starting_csv: "rhbk-operator.v26.4.7-opr.1"

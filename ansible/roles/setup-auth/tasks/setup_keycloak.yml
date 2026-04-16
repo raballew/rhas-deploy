@@ -1,4 +1,16 @@
 
+# validate required credentials
+
+- name: validate keycloak credentials are explicitly set
+  assert:
+    that:
+      - keycloak_db_user is defined
+      - keycloak_db_password is defined
+      - keycloak_client_secret is defined
+    fail_msg: >-
+      Keycloak credentials (keycloak_db_user, keycloak_db_password,
+      keycloak_client_secret) must be set in inventory or vault.
+
 # install the keycloak operator
 
 - name: install keycloak operator
