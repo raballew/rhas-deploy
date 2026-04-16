@@ -1,15 +1,6 @@
 ---
 # defaults
 
-# default platform groups (also defined in setup-auth)
-cluster_admin_group: "cluster-admins"
-platform_admin_group: "platform-admins"
-platform_user_group: "platform-users"
-
-# default jumpstarter groups (also defined in setup-auth)
-jumpstarter_admin_group: "jumpstarter-admins"
-jumpstarter_user_group: "jumpstarter-users"
-
 # devspaces operator
 devspaces_subscription_channel: "stable"
 devspaces_subscription_starting_csv: "devspacesoperator.v3.27.0"
