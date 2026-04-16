@@ -70,8 +70,8 @@ spec:
         lastName: "Null"
         credentials:
           - type: password
-            value: "developer"
-            temporary: false
+            value: "{{ keycloak_user_developer_password | default('developer') }}"
+            temporary: true
         realmRoles:
           - default-roles-openshift
         groups:
@@ -86,8 +86,8 @@ spec:
         lastName: "Ops"
         credentials:
           - type: password
-            value: "devops"
-            temporary: false
+            value: "{{ keycloak_user_devops_password | default('devops') }}"
+            temporary: true
         realmRoles:
           - default-roles-openshift
         groups:
@@ -101,8 +101,8 @@ spec:
         lastName: "Test"
         credentials:
           - type: password
-            value: "tester"
-            temporary: false
+            value: "{{ keycloak_user_tester_password | default('tester') }}"
+            temporary: true
         realmRoles:
           - default-roles-openshift
         groups:
