@@ -15,16 +15,38 @@
           "tag:Name": "{{ cluster_name }}*"
       register: ec2_instances
 
-    - name: start instances
+    - name: start instances (async)
       ec2_instance:
         state: running
         wait: true
         instance_ids: "{{ ec2_instances.instances | map(attribute='instance_id') | list }}"
       when: ec2_instances.instances | length > 0
-      async: 600  # Allow up to 10 minutes for each stop operation
-      poll: 0     # Fire and forget - don't wait for completion
+      async: 600
+      poll: 0
+      register: start_jobs
 
-    - name: wait until the cluster is ready
-      pause:
-        seconds: "{{ wait_timeout }}"
+    - name: wait for all instances to finish starting
+      async_status:
+        jid: "{{ item.ansible_job_id }}"
+      loop: "{{ start_jobs.results | default([]) }}"
+      when:
+        - ec2_instances.instances | length > 0
+        - item.ansible_job_id is defined
+      register: start_jobs_result
+      until: start_jobs_result.finished
+      retries: 60
+      delay: 10
+
+    - name: verify instances are running
+      ec2_instance_info:
+        region: "{{ aws_default_region }}"
+        filters:
+          instance-state-name: stopped
+          "tag:Name": "{{ cluster_name }}*"
+      register: still_stopped_instances
+
+    - name: fail if instances are still stopped
+      fail:
+        msg: "Some instances are still stopped after start operation"
+      when: still_stopped_instances.instances | length > 0
 

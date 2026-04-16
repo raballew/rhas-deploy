@@ -42,7 +42,7 @@
       set_fact:
         all_stopped_instances: "{{ (gce_instances_a.resources | default([])) + (gce_instances_b.resources | default([])) + (gce_instances_f.resources | default([])) }}"
 
-    - name: start instances
+    - name: start instances (async)
       google.cloud.gcp_compute_instance:
         name: "{{ item.name }}"
         zone: "{{ item.zone.split('/')[-1] }}"
@@ -52,10 +52,40 @@
         service_account_file: "{{ gcp_service_account_key_file }}"
       loop: "{{ all_stopped_instances }}"
       when: all_stopped_instances | length > 0
-      async: 600  # Allow up to 10 minutes for each stop operation
-      poll: 0     # Fire and forget - don't wait for completion
+      async: 600
+      poll: 0
+      register: start_jobs
 
-    - name: wait until the cluster is ready
-      pause:
-        seconds: "{{ wait_timeout }}"
+    - name: wait for all instances to finish starting
+      async_status:
+        jid: "{{ item.ansible_job_id }}"
+      loop: "{{ start_jobs.results | default([]) }}"
+      when:
+        - all_stopped_instances | length > 0
+        - item.ansible_job_id is defined
+      register: start_jobs_result
+      until: start_jobs_result.finished
+      retries: 60
+      delay: 10
+
+    - name: verify instances are running
+      google.cloud.gcp_compute_instance_info:
+        project: "{{ gcp_project_id }}"
+        zone: "{{ gcp_default_region }}-{{ item }}"
+        filters:
+          - name = "{{ cluster_name }}*"
+          - status = "TERMINATED"
+        auth_kind: serviceaccount
+        service_account_file: "{{ gcp_service_account_key_file }}"
+      register: stopped_instances_check
+      loop: "{{ gcp_zones | default(['a', 'b', 'f']) }}"
+
+    - name: combine stopped instances check from all zones
+      set_fact:
+        still_stopped_instances: "{{ stopped_instances_check.results | selectattr('resources', 'defined') | map(attribute='resources') | flatten | list }}"
+
+    - name: fail if instances are still stopped
+      fail:
+        msg: "Some instances are still stopped after start operation: {{ still_stopped_instances | map(attribute='name') | list }}"
+      when: still_stopped_instances | length > 0
 

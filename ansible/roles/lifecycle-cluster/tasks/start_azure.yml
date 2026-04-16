@@ -18,7 +18,7 @@
       set_fact:
         stopped_vms: "{{ azure_vms.vms | selectattr('name', 'match', cluster_label) | selectattr('power_state', 'equalto', 'stopped') | list }}"
 
-    - name: start instances
+    - name: start instances (async)
       azure_rm_virtualmachine:
         resource_group: "{{ item.resource_group }}"
         name: "{{ item.name }}"
@@ -26,10 +26,34 @@
         started: true
       loop: "{{ stopped_vms }}"
       when: stopped_vms | length > 0
-      async: 600  # Allow up to 10 minutes for each stop operation
-      poll: 0     # Fire and forget - don't wait for completion
+      async: 600
+      poll: 0
+      register: start_jobs
 
-    - name: wait until the cluster is ready
-      pause:
-        seconds: "{{ wait_timeout }}"
+    - name: wait for all instances to finish starting
+      async_status:
+        jid: "{{ item.ansible_job_id }}"
+      loop: "{{ start_jobs.results | default([]) }}"
+      when:
+        - stopped_vms | length > 0
+        - item.ansible_job_id is defined
+      register: start_jobs_result
+      until: start_jobs_result.finished
+      retries: 60
+      delay: 10
+
+    - name: verify instances are running
+      azure_rm_virtualmachine_info:
+        subscription_id: "{{ azure_subscription }}"
+        resource_group: "{{ cluster_label }}-rg"
+      register: vm_status_check
+
+    - name: filter still stopped instances after start
+      set_fact:
+        still_stopped_vms: "{{ vm_status_check.vms | selectattr('name', 'match', cluster_label) | selectattr('power_state', 'equalto', 'stopped') | list }}"
+
+    - name: fail if instances are still stopped
+      fail:
+        msg: "Some VMs are still stopped after start operation: {{ still_stopped_vms | map(attribute='name') | list }}"
+      when: still_stopped_vms | length > 0
 
