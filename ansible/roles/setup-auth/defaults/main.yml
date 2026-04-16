@@ -1,15 +1,6 @@
 ---
 # defaults
 
-# default platform groups
-cluster_admin_group: "cluster-admins"
-platform_admin_group: "platform-admins"
-platform_user_group: "platform-users"
-
-# default jumpstarter groups
-jumpstarter_admin_group: "jumpstarter-admins"
-jumpstarter_user_group: "jumpstarter-users"
-
 # keycloak
 keycloak_namespace: "keycloak"
 
