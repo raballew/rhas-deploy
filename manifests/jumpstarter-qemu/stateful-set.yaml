@@ -108,7 +108,7 @@ spec:
               name: dev-vhost-vsock
           env:
             - name: JUMPSTARTER_GRPC_INSECURE
-              value: "1"
+              value: "0"
           command:
             - /bin/bash
             - -c
@@ -146,7 +146,7 @@ spec:
               # create the exporter config
               EXPORTER_NAME=$(cat /etc/hostname)
               
-              jmp admin create exporter "$EXPORTER_NAME" -n $NAMESPACE --label platform=qemu-arm --label type=virtual --save --insecure-tls-config --nointeractive --out ./dummy.yaml
+              jmp admin create exporter "$EXPORTER_NAME" -n $NAMESPACE --label platform=qemu-arm --label type=virtual --save --nointeractive --out ./dummy.yaml
               TOKEN=$(yq '.token' dummy.yaml)
               echo "$TOKEN" > /shared/token
 
@@ -171,7 +171,7 @@ spec:
               endpoint: $(cat /shared/endpoint)
               tls:
                 ca: ''
-                insecure: true
+                insecure: false
               token: $(cat /shared/token)
               export:
                 console:
