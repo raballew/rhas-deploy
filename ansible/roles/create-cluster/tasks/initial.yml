@@ -37,11 +37,17 @@
         curl -o {{ installer_binary }}-{{ installer_architecture }}.tar.gz \
           -L {{ installer_binary_url }}
 
+        curl -o sha256sum.txt \
+          -L {{ installer_binary_url | regex_replace('/[^/]+$', '/sha256sum.txt') }}
+
+        grep "{{ installer_binary }}-{{ installer_architecture }}.tar.gz" sha256sum.txt \
+          | sha256sum -c -
+
         tar xzf ./{{ installer_binary }}-{{ installer_architecture }}.tar.gz
 
         mv {{ installer_binary }} {{ installer_binary_fqn }}
 
-        rm {{ installer_binary }}-{{ installer_architecture }}.tar.gz
+        rm {{ installer_binary }}-{{ installer_architecture }}.tar.gz sha256sum.txt
 
 - name: create .env file
   template:
