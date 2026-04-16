@@ -9,4 +9,6 @@ spec:
   name: {{ operator_name }}
   source: {{ source }}
   sourceNamespace: {{ source_namespace }}
+{% if subscription_starting_csv %}
   startingCSV: {{ subscription_starting_csv }}
+{% endif %}
