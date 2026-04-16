@@ -1,48 +1,63 @@
 # Implement your install tasks here
 # -------------------------------------------------
 
+- name: check if cluster already exists
+  stat:
+    path: "~/.kube/{{ cluster_fqn }}"
+  register: existing_kubeconfig
+
+- name: skip cluster creation if kubeconfig exists
+  debug:
+    msg: "Cluster kubeconfig already exists at ~/.kube/{{ cluster_fqn }}, skipping creation."
+  when: existing_kubeconfig.stat.exists
+
 - name: create cluster config file
+  when: not existing_kubeconfig.stat.exists
   template:
     src: "roles/create-cluster/templates/install-config-{{ cloud_provider }}.yaml.j2"
     dest: "{{ cluster_metadata_dir }}/{{ cluster_fqn }}/install-config.yaml"
 
 - name: create cluster
+  when: not existing_kubeconfig.stat.exists
   shell: |
     source .env-{{ cluster_fqn }}.sh && \
     ./{{ installer_binary_fqn }} create cluster --dir="{{ cluster_metadata_dir }}/{{ cluster_fqn }}"
   args:
     chdir: "{{ openshift_install_dir }}"
 
-- name: check openshift-install pid
-  pids:
-    name: openshift-install
-  register: openshift_install_pids
+- name: wait for cluster installation to complete
+  when: not existing_kubeconfig.stat.exists
+  block:
+    - name: check openshift-install pid
+      pids:
+        name: openshift-install
+      register: openshift_install_pids
 
-- name: wait for openshift-install to finish
-  wait_for:
-    path: "$HOME/.openshift/{{ cluster_fqn }}/auth/kubeconfig"
-    state: present
-    timeout: 5400
+    - name: wait for openshift-install to finish
+      wait_for:
+        path: "$HOME/.openshift/{{ cluster_fqn }}/auth/kubeconfig"
+        state: present
+        timeout: 5400
 
-- name: wait for bootstrap to complete
-  shell: |
-    source .env-{{ cluster_fqn }}.sh && \
-    ./{{ installer_binary_fqn }} wait-for bootstrap-complete --dir="{{ cluster_metadata_dir }}/{{ cluster_fqn }}"
-  args:
-    chdir: "{{ openshift_install_dir }}"
+    - name: wait for bootstrap to complete
+      shell: |
+        source .env-{{ cluster_fqn }}.sh && \
+        ./{{ installer_binary_fqn }} wait-for bootstrap-complete --dir="{{ cluster_metadata_dir }}/{{ cluster_fqn }}"
+      args:
+        chdir: "{{ openshift_install_dir }}"
 
-- name: wait for the cluster
-  shell: |
-    source .env-{{ cluster_fqn }}.sh
-    ./{{ installer_binary_fqn }} wait-for install-complete --dir="{{ cluster_metadata_dir }}/{{ cluster_fqn }}"
-  args:
-    chdir: "{{ openshift_install_dir }}"
+    - name: wait for the cluster
+      shell: |
+        source .env-{{ cluster_fqn }}.sh
+        ./{{ installer_binary_fqn }} wait-for install-complete --dir="{{ cluster_metadata_dir }}/{{ cluster_fqn }}"
+      args:
+        chdir: "{{ openshift_install_dir }}"
 
-- name: copy KUBECONFIG to local location
-  copy:
-    src: "~/.openshift/{{ cluster_fqn }}/auth/kubeconfig"
-    dest: "{{ local_kubeconfig_file }}"
+    - name: copy KUBECONFIG to local location
+      copy:
+        src: "~/.openshift/{{ cluster_fqn }}/auth/kubeconfig"
+        dest: "{{ local_kubeconfig_file }}"
 
-- name: pause to allow the cluster to settle
-  pause:
-    seconds: 300
+    - name: pause to allow the cluster to settle
+      pause:
+        seconds: 300
