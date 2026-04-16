@@ -17,12 +17,15 @@
     mode: 0664
 
 - name: create htpasswd secret from htpasswd file
-  ignore_errors: true # can fail if secret already exists
   shell: |
     oc create secret generic htpasswd-secret \
       --from-file=htpasswd=roles/setup-auth/files/users.htpasswd \
       -n openshift-config \
       --kubeconfig="$HOME/.kube/{{ cluster_fqn }}"
+  register: htpasswd_secret_result
+  failed_when:
+    - htpasswd_secret_result.rc != 0
+    - "'already exists' not in htpasswd_secret_result.stderr"
 
 # configure OAuth
 

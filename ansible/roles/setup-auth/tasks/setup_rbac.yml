@@ -6,10 +6,13 @@
 # prepare the default admin user and groups
 
 - name: create the default groups
-  ignore_errors: true # can fail if group already exists
   shell: |
     oc adm groups new {{ item }} \
       --kubeconfig="$HOME/.kube/{{ cluster_fqn }}"
+  register: group_result
+  failed_when:
+    - group_result.rc != 0
+    - "'already exists' not in group_result.stderr"
   with_items:
     - "{{ cluster_admin_group }}"
     - "{{ platform_admin_group }}"
@@ -51,10 +54,13 @@
 # create the jumpstarter groups
 
 - name: create the jumpstarter groups
-  ignore_errors: true # can fail if group already exists
   shell: |
     oc adm groups new {{ item }} \
       --kubeconfig="$HOME/.kube/{{ cluster_fqn }}"
+  register: jumpstarter_group_result
+  failed_when:
+    - jumpstarter_group_result.rc != 0
+    - "'already exists' not in jumpstarter_group_result.stderr"
   with_items:
     - "{{ jumpstarter_admin_group }}"
     - "{{ jumpstarter_user_group }}"
