@@ -8,14 +8,15 @@
     AZURE_SUBSCRIPTION_ID: "{{ azure_subscription }}"
     AZURE_TENANT: "{{ azure_tenant }}"
   block:
-    - name: gather all azure instances from resource group
+    - name: gather azure instances from cluster resource group
       azure_rm_virtualmachine_info:
-        subscription_id: "{{ azure_subscription }}" # FIXME: this is not correct, it might 'catch' other VMs that are not part of the cluster
+        subscription_id: "{{ azure_subscription }}"
+        resource_group: "{{ cluster_label }}-rg"
       register: azure_vms
 
     - name: filter instances by cluster name and running state
       set_fact:
-        running_vms: "{{ azure_vms.vms | selectattr('power_state', 'equalto', 'running') | list }}"
+        running_vms: "{{ azure_vms.vms | selectattr('name', 'match', cluster_label) | selectattr('power_state', 'equalto', 'running') | list }}"
         
     - name: stop running instances (async)
       azure_rm_virtualmachine:
@@ -44,11 +45,12 @@
     - name: verify instances are stopped
       azure_rm_virtualmachine_info:
         subscription_id: "{{ azure_subscription }}"
+        resource_group: "{{ cluster_label }}-rg"
       register: vm_status_check
 
     - name: filter still running instances after stop
       set_fact:
-        still_running_vms: "{{ vm_status_check.vms | selectattr('power_state', 'equalto', 'running') | list }}"
+        still_running_vms: "{{ vm_status_check.vms | selectattr('name', 'match', cluster_label) | selectattr('power_state', 'equalto', 'running') | list }}"
 
     - name: fail if instances are still running
       fail:

@@ -8,14 +8,15 @@
     AZURE_SUBSCRIPTION_ID: "{{ azure_subscription }}"
     AZURE_TENANT: "{{ azure_tenant }}"
   block:
-    - name: gather all azure instances from resource group
+    - name: gather azure instances from cluster resource group
       azure_rm_virtualmachine_info:
-        subscription_id: "{{ azure_subscription }}" # FIXME: this is not correct, it might 'catch' other VMs that are not part of the cluster
+        subscription_id: "{{ azure_subscription }}"
+        resource_group: "{{ cluster_label }}-rg"
       register: azure_vms
 
     - name: filter instances by cluster name and stopped state
       set_fact:
-        stopped_vms: "{{ azure_vms.vms | selectattr('power_state', 'equalto', 'stopped') | list }}"
+        stopped_vms: "{{ azure_vms.vms | selectattr('name', 'match', cluster_label) | selectattr('power_state', 'equalto', 'stopped') | list }}"
 
     - name: start instances
       azure_rm_virtualmachine:
