@@ -47,9 +47,13 @@
   template:
     src: "roles/create-cluster/templates/env-{{ cloud_provider }}.j2"
     dest: "{{ openshift_install_dir }}/.env-{{ cluster_fqn }}.sh"
-    
+    mode: "0600"
+  no_log: true
+
 - name: create azure credentials file
   when: cloud_provider == "azure"
   template:
     src: "roles/create-cluster/templates/azure_credentials.json.j2"
     dest: "~/.azure/osServicePrincipal.json"
+    mode: "0600"
+  no_log: true
