@@ -7,6 +7,10 @@
     ACTION: "STOP" # START, STOP, UNINSTALL, UPDATE
 
   tasks:
+    - name: gather cluster facts
+      include_role:
+        name: roles/gather-cluster-facts
+
     - name: stop the openshift cluster
       include_role:
         name: roles/lifecycle-cluster
