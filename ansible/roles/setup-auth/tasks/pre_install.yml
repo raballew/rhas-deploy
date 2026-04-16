@@ -5,6 +5,7 @@
   shell: >-
     htpasswd -nb "{{ default_admin_user }}" "{{ default_admin_password }}"|cut -d: -f2
   register: default_line
+  no_log: true
   when:
     - default_admin_password is defined
 
@@ -19,6 +20,7 @@
   shell: >-
     htpasswd -nb "{{ default_nobody_user }}" "{{ default_nobody_password }}"|cut -d: -f2
   register: default_line
+  no_log: true
   when:
     - default_nobody_password is defined
 

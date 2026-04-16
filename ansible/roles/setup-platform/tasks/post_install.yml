@@ -16,8 +16,10 @@
       --kubeconfig="$HOME/.kube/{{ cluster_fqn }}"
 
 - name: facts
+  no_log: true
   set_fact:
     github_api_credentials: "https://{{ github_api_pat_owner }}:{{ github_api_pat }}@{{ github_endpoint }}/"
+  when: github_api_pat_owner is defined and github_api_pat is defined and github_endpoint is defined
 
 - name: create github platform credentials secret  
   k8s:

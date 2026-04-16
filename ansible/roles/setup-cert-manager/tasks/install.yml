@@ -3,6 +3,7 @@
 
 - name: create cloud provider credentials (aws)
   when: cloud_provider == "aws"
+  no_log: true
   k8s:
     definition:
       apiVersion: v1
@@ -25,6 +26,7 @@
 
 - name: create cloud provider credentials (azure)
   when: cloud_provider == "azure"
+  no_log: true
   k8s:
     definition:
       apiVersion: v1
@@ -47,12 +49,13 @@
 
 - name: create cloud provider credentials (gcp)
   when: cloud_provider == "gcp"
+  no_log: true
   block:
     - name: import the service account key
       slurp:
         src: "{{ gcp_service_account_key_file }}"
       register: gcp_service_account_json
-    
+
     - name: create service account secret
       k8s:
         definition:
