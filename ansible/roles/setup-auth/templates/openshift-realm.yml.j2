@@ -75,8 +75,8 @@ spec:
         realmRoles:
           - default-roles-openshift
         groups:
-          - platform-users
-          - jumpstarter-users
+          - {{ platform_user_group }}
+          - {{ jumpstarter_user_group }}
 
       - username: devops
         email: devops@{{ cluster_toplevel_domain }}
@@ -91,7 +91,7 @@ spec:
         realmRoles:
           - default-roles-openshift
         groups:
-          - platform-users
+          - {{ platform_user_group }}
 
       - username: tester
         email: tester@{{ cluster_toplevel_domain }}
@@ -106,7 +106,7 @@ spec:
         realmRoles:
           - default-roles-openshift
         groups:
-          - platform-users
+          - {{ platform_user_group }}
 
     clientScopes:
       - name: acr
@@ -636,22 +636,22 @@ spec:
       - saml_organization
     
     groups:
-      - name: platform-users
-        path: "/platform-users"
+      - name: {{ platform_user_group }}
+        path: "/{{ platform_user_group }}"
         subGroups: []
         attributes: {}
         realmRoles: []
         clientRoles: {}
-      - name: jumpstarter-users
-        path: "/jumpstarter-users"
+      - name: {{ jumpstarter_user_group }}
+        path: "/{{ jumpstarter_user_group }}"
         subGroups: []
         attributes: {}
         realmRoles: []
         clientRoles: {}
-    
+
     defaultGroups:
-      - "/platform-users"
-      - "/jumpstarter-users"
+      - "/{{ platform_user_group }}"
+      - "/{{ jumpstarter_user_group }}"
 
     defaultRole:
       name: default-roles-openshift
