@@ -1,6 +1,16 @@
 # Implement your pre-install deployment tasks here
 # -------------------------------------------------
 
+- name: validate platform_prefix matches static manifests
+  assert:
+    that:
+      - platform_prefix == "auto"
+    fail_msg: >-
+      platform_prefix is set to "{{ platform_prefix }}" but static
+      manifests in manifests/ hardcode the "auto-" prefix. Either set
+      platform_prefix to "auto" or update the static manifests to
+      match.
+
 - name: install the jumpstarter operator
   when: platform_deploy_jumpstarter | bool == true
   block:
