@@ -2,3 +2,10 @@
 # defaults
 
 wait_timeout: 600  # Timeout for cluster readiness wait in seconds
+
+gcp_zones:
+  - a
+  - b
+  - c
+  - d
+  - f

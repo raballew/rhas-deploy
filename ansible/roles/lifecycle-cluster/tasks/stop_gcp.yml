@@ -5,42 +5,21 @@
   environment:
     GOOGLE_APPLICATION_CREDENTIALS: "{{ gcp_service_account_key_file }}"
   block:
-    - name: gather instances in running state
+    - name: gather instances in running state across zones
       google.cloud.gcp_compute_instance_info:
         project: "{{ gcp_project_id }}"
-        zone: "{{ gcp_default_region }}-a"
+        zone: "{{ gcp_default_region }}-{{ item }}"
         filters:
           - name = "{{ cluster_name }}*"
           - status = "RUNNING"
         auth_kind: serviceaccount
         service_account_file: "{{ gcp_service_account_key_file }}"
-      register: gce_instances_a
-
-    - name: gather instances in running state (zone b)
-      google.cloud.gcp_compute_instance_info:
-        project: "{{ gcp_project_id }}"
-        zone: "{{ gcp_default_region }}-b"
-        filters:
-          - name = "{{ cluster_name }}*"
-          - status = "RUNNING"
-        auth_kind: serviceaccount
-        service_account_file: "{{ gcp_service_account_key_file }}"
-      register: gce_instances_b
-
-    - name: gather instances in running state (zone f)
-      google.cloud.gcp_compute_instance_info:
-        project: "{{ gcp_project_id }}"
-        zone: "{{ gcp_default_region }}-f"
-        filters:
-          - name = "{{ cluster_name }}*"
-          - status = "RUNNING"
-        auth_kind: serviceaccount
-        service_account_file: "{{ gcp_service_account_key_file }}"
-      register: gce_instances_f
+      register: gce_instances_by_zone
+      loop: "{{ gcp_zones }}"
 
     - name: combine instances from all zones
       set_fact:
-        all_running_instances: "{{ (gce_instances_a.resources | default([])) + (gce_instances_b.resources | default([])) + (gce_instances_f.resources | default([])) }}"
+        all_running_instances: "{{ gce_instances_by_zone.results | selectattr('resources', 'defined') | map(attribute='resources') | flatten | list }}"
 
     - name: stop running instances (async)
       google.cloud.gcp_compute_instance:
@@ -78,7 +57,7 @@
         auth_kind: serviceaccount
         service_account_file: "{{ gcp_service_account_key_file }}"
       register: running_instances_check
-      loop: ['a', 'b', 'f']
+      loop: "{{ gcp_zones }}"
       
     - name: combine running instances check from all zones
       set_fact:
