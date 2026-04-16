@@ -1,6 +1,7 @@
 **/bin/**
 **/secrets/**
 **/inventory/**
+!**/inventory/main.yml.example
 **/users.htpasswd
 openshift-install
 **/env.sh
