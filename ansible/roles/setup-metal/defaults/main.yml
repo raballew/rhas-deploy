@@ -9,9 +9,11 @@
 aws_metal_instance_type: "m6g.metal" # 64 vCPU, 256 GiB RAM
 aws_metal_availability_zone: "a" # a, b, c
 
-aws_metal_ami_id: "ami-04ae961842e2912df" # ARM, eu-central-1
-#aws_metal_ami_id: "ami-02f30107e3441227b" # ARM, us-east-2
-#aws_metal_ami_id: "ami-0ba6941055f037421" # ARM, eu-west-1
+aws_metal_ami_ids:
+  eu-central-1: "ami-04ae961842e2912df"
+  us-east-2: "ami-02f30107e3441227b"
+  eu-west-1: "ami-0ba6941055f037421"
+aws_metal_ami_id: "{{ aws_metal_ami_ids[aws_default_region] | default('') }}"
 
 aws_metal_instance_count: 1 # number of replicas per availability zone
 aws_metal_volume_size: 120

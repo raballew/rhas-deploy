@@ -1,6 +1,16 @@
 # Implement your install deployment tasks here
 # -------------------------------------------------
 
+- name: validate bare-metal AMI is available for the selected region
+  when: setup_baremetal_worker_node | bool == true and cloud_provider == "aws"
+  assert:
+    that:
+      - aws_metal_ami_id | length > 0
+    fail_msg: >-
+      No bare-metal AMI configured for region {{ aws_default_region }}.
+      Set aws_metal_ami_id in inventory or add the region to
+      aws_metal_ami_ids in setup-metal defaults.
+
 # add the bare-metal worker node to the cluster (currently aws only)
 - name: configure the 'metal' cluster topology
   when: setup_baremetal_worker_node | bool == true
