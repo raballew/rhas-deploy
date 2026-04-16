@@ -5,10 +5,22 @@ metadata:
   namespace: "{{ gitops_namespace }}"
 spec:
   clusterResourceWhitelist:
-    - group: "*"
+    - group: ""
+      kind: Namespace
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRole
+    - group: rbac.authorization.k8s.io
+      kind: ClusterRoleBinding
+    - group: console.openshift.io
+      kind: ConsoleLink
+    - group: operators.coreos.com
       kind: "*"
+    - group: machine.openshift.io
+      kind: MachineSet
   destinations:
-    - namespace: "*"
-      server: "*"
+    - namespace: "{{ platform_prefix }}-*"
+      server: https://kubernetes.default.svc
+    - namespace: "{{ gitops_namespace }}"
+      server: https://kubernetes.default.svc
   sourceRepos:
-    - "*"
+    - "{{ platform_gitops_repo_url }}"
