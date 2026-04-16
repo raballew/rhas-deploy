@@ -58,6 +58,14 @@
         src: "~/.openshift/{{ cluster_fqn }}/auth/kubeconfig"
         dest: "{{ local_kubeconfig_file }}"
 
-    - name: pause to allow the cluster to settle
-      pause:
-        seconds: 300
+    - name: wait for cluster nodes to be ready
+      k8s_info:
+        api_version: v1
+        kind: Node
+        kubeconfig: "{{ local_kubeconfig_file }}"
+      register: r_nodes
+      retries: 60
+      delay: 10
+      until:
+        - r_nodes.resources | length > 0
+        - r_nodes.resources | selectattr('status.conditions', 'defined') | map(attribute='status.conditions') | map('selectattr', 'type', 'equalto', 'Ready') | map('selectattr', 'status', 'equalto', 'True') | map('list') | select('length') | list | length == r_nodes.resources | length

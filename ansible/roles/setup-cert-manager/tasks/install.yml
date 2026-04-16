@@ -96,9 +96,20 @@
     apply: yes
     kubeconfig: "{{ local_kubeconfig_file }}"
 
-- name: pause to allow cert-manager to start
-  pause:
-    seconds: 180
+- name: wait for cert-manager controller to be ready
+  k8s_info:
+    api_version: apps/v1
+    kind: Deployment
+    name: cert-manager
+    namespace: "{{ cert_manager_namespace }}"
+    kubeconfig: "{{ local_kubeconfig_file }}"
+  register: r_cert_manager_deploy
+  retries: 30
+  delay: 10
+  until:
+    - r_cert_manager_deploy.resources | length > 0
+    - r_cert_manager_deploy.resources[0].status.availableReplicas is defined
+    - r_cert_manager_deploy.resources[0].status.availableReplicas | int >= 1
 
 - name: create cluster issuer (aws)
   when: cloud_provider == "aws"
@@ -195,8 +206,19 @@
     kubeconfig: "{{ local_kubeconfig_file }}"
 
 - name: wait for cluster issuer to be ready
-  pause:
-    seconds: 180
+  k8s_info:
+    api_version: cert-manager.io/v1
+    kind: ClusterIssuer
+    name: letsencrypt-prod
+    kubeconfig: "{{ local_kubeconfig_file }}"
+  register: r_cluster_issuer
+  retries: 30
+  delay: 10
+  until:
+    - r_cluster_issuer.resources | length > 0
+    - r_cluster_issuer.resources[0].status is defined
+    - r_cluster_issuer.resources[0].status.conditions is defined
+    - r_cluster_issuer.resources[0].status.conditions | selectattr('type', 'equalto', 'Ready') | selectattr('status', 'equalto', 'True') | list | length > 0
 
 - name: create wildcard certificate for default ingress
   k8s:
@@ -244,7 +266,19 @@
   until:
     - r_certificate.resources | length | int > 0
 
-- name: pause to allow certificate to be ready
-  pause:
-    seconds: 120
+- name: wait for certificate to be issued
+  k8s_info:
+    api_version: cert-manager.io/v1
+    kind: Certificate
+    name: default-ingress-cert
+    namespace: openshift-ingress
+    kubeconfig: "{{ local_kubeconfig_file }}"
+  register: r_cert_ready
+  retries: 60
+  delay: 10
+  until:
+    - r_cert_ready.resources | length > 0
+    - r_cert_ready.resources[0].status is defined
+    - r_cert_ready.resources[0].status.conditions is defined
+    - r_cert_ready.resources[0].status.conditions | selectattr('type', 'equalto', 'Ready') | selectattr('status', 'equalto', 'True') | list | length > 0
 

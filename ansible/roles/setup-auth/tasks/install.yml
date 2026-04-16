@@ -38,6 +38,17 @@
     state: present
     kubeconfig: "{{ local_kubeconfig_file }}"
 
-- name: pause to allow oauth to settle
-  pause:
-    seconds: 300
+- name: wait for oauth server pods to be ready
+  k8s_info:
+    api_version: v1
+    kind: Pod
+    namespace: openshift-authentication
+    label_selectors:
+      - app=oauth-openshift
+    kubeconfig: "{{ local_kubeconfig_file }}"
+  register: r_oauth_pods
+  retries: 60
+  delay: 10
+  until:
+    - r_oauth_pods.resources | length > 0
+    - r_oauth_pods.resources | selectattr('status.phase', 'equalto', 'Running') | list | length == r_oauth_pods.resources | length

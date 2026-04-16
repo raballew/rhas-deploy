@@ -58,6 +58,15 @@
         create_operator_namespace: true
         create_operator_group: true
 
-- name: wait for operators to fully initialize
-  pause:
-    minutes: 1
+- name: wait for operator subscriptions to be ready
+  k8s_info:
+    api_version: operators.coreos.com/v1alpha1
+    kind: ClusterServiceVersion
+    namespace: openshift-operators
+    kubeconfig: "{{ local_kubeconfig_file }}"
+  register: r_csvs
+  retries: 30
+  delay: 10
+  until:
+    - r_csvs.resources | length > 0
+    - r_csvs.resources | selectattr('status.phase', 'defined') | selectattr('status.phase', 'equalto', 'Succeeded') | list | length == r_csvs.resources | length

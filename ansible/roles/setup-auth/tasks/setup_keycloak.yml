@@ -68,9 +68,22 @@
   loop:
     - openshift-realm.yml.j2
 
-- name: pause to allow realm import to start
-  pause:
-    seconds: 60
+- name: wait for realm import to be applied
+  k8s_info:
+    api_version: k8s.keycloak.org/v2alpha1
+    kind: KeycloakRealmImport
+    name: openshift-realm
+    namespace: "{{ keycloak_namespace }}"
+    kubeconfig: "{{ local_kubeconfig_file }}"
+  register: r_realm_import
+  retries: 30
+  delay: 10
+  until:
+    - r_realm_import.resources | length > 0
+    - r_realm_import.resources[0].status is defined
+    - r_realm_import.resources[0].status.conditions is defined
+    - r_realm_import.resources[0].status.conditions | selectattr('type', 'equalto', 'Done') | selectattr('status', 'equalto', 'True') | list | length > 0
+  ignore_errors: true
 
 - name: wait for KC to be ready after realm import
   k8s_info:
